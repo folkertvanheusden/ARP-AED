@@ -90,8 +90,9 @@ def remember(macs, mac_from, ips, ip_from):
     # count macs per ip4
     if not ip_from in ips:
         ips[ip_from] = set()
-    if not mac_from in ips[ip_from]:
-        ips[ip_from].add(mac_from)
+    mac_from_str = mac_to_str(mac_from)
+    if not mac_from_str in ips[ip_from]:
+        ips[ip_from].add(mac_from_str)
         if len(ips[ip_from]) > 1:
             print(f'{ip_from} has multiple MACs: {", ".join(ips[ip_from])}')
 
