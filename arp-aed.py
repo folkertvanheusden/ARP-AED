@@ -73,13 +73,14 @@ s.bind((device, 0))
 if not uid is None:
     os.setuid(int(uid))
 
-macs = { }
+macs4 = { }
+macs6 = { }
 ip4s = { }
 ip6s = { }
 
 
 def remember(macs, mac_from, ips, ip_from):
-    # count ip4s per mac
+    # count ips per mac
     if not mac_from in macs:
         macs[mac_from] = set()
     if not ip_from in macs[mac_from]:
@@ -87,7 +88,7 @@ def remember(macs, mac_from, ips, ip_from):
         if len(macs[mac_from]) > 1:
             print(f'{mac_to_str(mac_from)} has multiple IP addresses: {", ".join(macs[mac_from])}')
 
-    # count macs per ip4
+    # count macs per ip
     if not ip_from in ips:
         ips[ip_from] = set()
     mac_from_str = mac_to_str(mac_from)
@@ -96,6 +97,7 @@ def remember(macs, mac_from, ips, ip_from):
         if len(ips[ip_from]) > 1:
             print(f'{ip_from} has multiple MACs: {", ".join(ips[ip_from])}')
 
+print('Running...')
 
 while True:
     raw_packet, addr = s.recvfrom(65535)
@@ -106,9 +108,9 @@ while True:
 
     if raw_packet[12] == 0x08 and raw_packet[13] == 0x00:  # IP4
         ip4_from = ip4_to_str(raw_packet[14 + 12: 14 + 12 + 4])  # TODO handle VLANs
-        remember(macs, mac_from, ip4s, ip4_from)
+        remember(macs4, mac_from, ip4s, ip4_from)
 
     if raw_packet[12] == 0x86 and raw_packet[13] == 0xdd:  # IP6
         if link_local == True or (link_local == False and raw_packet[14 + 8] != 0xfe):
             ip6_from = ip6_to_str(raw_packet[14 + 8: 14 + 8 + 16])  # TODO handle VLANs
-            remember(macs, mac_from, ip6s, ip6_from)
+            remember(macs6, mac_from, ip6s, ip6_from)
